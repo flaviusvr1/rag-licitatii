@@ -1,16 +1,22 @@
-import { createReadStream, promises as fs } from "fs";
+import fs from "fs";                  // pentru createReadStream, existsSync etc.
+import fetch from "node-fetch";
+import { promises as fsp } from "fs"; // pentru readFile, writeFile async
 import path from "path";
+import FormData from "form-data";
+
 
 const API_URL = process.env.LLAMA_PARSING_API_URL!;
 const API_KEY = process.env.LLAMA_PARSING_API_KEY!;
 const POLL_MS = Number(process.env.LLAMA_POLL_MS || 60000);
 const TIMEOUT_MS = Number(process.env.LLAMA_TIMEOUT_MS || 90 * 60 * 1000);
 
-export async function uploadFileToLlama(filePath: string): Promise<string> {
+export async function uploadFile(filePath: string): Promise<string> {
   const form = new FormData();
-  console.log(`${API_URL}/upload`)
-  // @ts-ignore – Node stream compat
-  form.append("file", createReadStream(filePath), path.basename(filePath));
+  form.append("file", fs.createReadStream(filePath), {
+    filename: path.basename(filePath),
+  });
+  console.log("🔹 Am adăugat fișier:", filePath, "→", path.basename(filePath));
+  // aceleași setări ca în script
   form.append("parse_mode", "parse_page_with_agent");
   form.append("model", "openai-gpt-4-1-mini");
   form.append("high_res_ocr", "true");
@@ -18,16 +24,23 @@ export async function uploadFileToLlama(filePath: string): Promise<string> {
   form.append("outlined_table_extraction", "true");
   form.append("output_tables_as_HTML", "true");
 
+  // atenție: NU punem form.getHeaders() aici
   const res = await fetch(`${API_URL}/upload`, {
     method: "POST",
     headers: { Authorization: `Bearer ${API_KEY}` },
-    body: form as any,
+    body: form,
   });
 
-  if (!res.ok) throw new Error(`Upload failed: ${res.status} ${await res.text()}`);
+  if (!res.ok) {
+    const txt = await res.text().catch(() => "");
+    throw new Error(`Upload failed ${res.status}: ${res.statusText} ${txt}`);
+  }
+
   const data = await res.json();
+  if (!data?.id) throw new Error(`Răspuns upload fără id: ${JSON.stringify(data)}`);
   return data.id;
 }
+
 
 export async function waitForCompletion(jobId: string): Promise<void> {
   const start = Date.now();
@@ -52,5 +65,7 @@ export async function downloadMarkdown(jobId: string, outPath: string): Promise<
   });
   if (!res.ok) throw new Error(`Download failed: ${res.status} ${await res.text()}`);
   const text = await res.text();
-  await fs.writeFile(outPath, text, "utf-8");
+  await fsp.writeFile(outPath, text, "utf-8"); 
 }
+
+export { uploadFile as uploadFileToLlama };

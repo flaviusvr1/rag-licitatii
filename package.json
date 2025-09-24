@@ -9,9 +9,13 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@pinecone-database/pinecone": "^6.1.2",
     "busboy": "^1.6.0",
+    "dotenv": "^17.2.2",
     "form-data": "^4.0.4",
     "next": "15.5.3",
+    "node-fetch": "^2.7.0",
+    "openai": "^5.22.1",
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "zod": "^4.1.9"

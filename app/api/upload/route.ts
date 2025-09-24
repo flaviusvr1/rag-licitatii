@@ -4,10 +4,16 @@ import Busboy from "busboy";
 import path from "path";
 import { createWriteStream, promises as fs } from "fs";
 import { Readable } from "stream";
-import { uploadFileToLlama, waitForCompletion, downloadMarkdown } from "../../../lib/converter/cloud-llama.ts"
+import {
+  uploadFileToLlama,
+  waitForCompletion,
+  downloadMarkdown,
+} from "../../../lib/converter/cloud-llama";
 
 const STORAGE_UPLOADS = path.join(process.cwd(), "storage", "uploads");
 const STORAGE_MARKDOWN = path.join(process.cwd(), "storage", "markdown");
+
+const MAX_CONCURRENCY = 6;
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -55,6 +61,31 @@ async function saveIncomingFiles(req: Request): Promise<string[]> {
   });
 }
 
+// helper asyncPool
+async function asyncPool<T, R>(
+  limit: number,
+  items: T[],
+  iterator: (item: T) => Promise<R>
+): Promise<R[]> {
+  const ret: R[] = [];
+  const executing = new Set<Promise<any>>();
+
+  for (const item of items) {
+    const p = Promise.resolve().then(() => iterator(item));
+    ret.push(p);
+
+    executing.add(p);
+    const clean = () => executing.delete(p);
+    p.then(clean).catch(clean);
+
+    if (executing.size >= limit) {
+      await Promise.race(executing);
+    }
+  }
+
+  return Promise.all(ret);
+}
+
 export async function POST(req: Request) {
   try {
     await fs.mkdir(STORAGE_UPLOADS, { recursive: true });
@@ -63,38 +94,46 @@ export async function POST(req: Request) {
     const files = await saveIncomingFiles(req);
     console.log("[UPLOAD] scrise pe disc:", files);
 
-    const results: any[] = [];
-    for (const f of files) {
+    const results = await asyncPool(MAX_CONCURRENCY, files, async (f) => {
       const uploadPath = path.join(STORAGE_UPLOADS, f);
-      const mdPath = path.join(STORAGE_MARKDOWN, f.replace(/\.[^.]+$/, ".md"));
+      const mdPath = path.join(
+        STORAGE_MARKDOWN,
+        f.replace(/\.[^.]+$/, ".md")
+      );
 
-      // Dacă există deja MD → skip
       try {
+        // skip dacă există deja
         await fs.access(mdPath);
         console.log("[SKIP] există deja MD:", mdPath);
-        results.push({ file: f, skipped: true });
-        continue;
+        return { file: f, skipped: true };
       } catch {}
 
-      // Trimitem la Cloud Llama
-      console.log("[LLAMA] upload →", uploadPath);
-      const jobId = await uploadFileToLlama(uploadPath);
-      console.log("[LLAMA] job id =", jobId);
+      try {
+        console.log("[LLAMA] upload →", uploadPath);
+        const jobId = await uploadFileToLlama(uploadPath);
+        console.log("[LLAMA] job id =", jobId);
 
-      console.log("[LLAMA] aștept finalizare…");
-      const status = await waitForCompletion(jobId);
-      console.log("[LLAMA] status final =", status);
+        console.log("[LLAMA] aștept finalizare…");
+        const status = await waitForCompletion(jobId);
+        console.log("[LLAMA] status final =", status);
 
-      console.log("[LLAMA] descarc MD →", mdPath);
-      await downloadMarkdown(jobId, mdPath);
+        console.log("[LLAMA] descarc MD →", mdPath);
+        await downloadMarkdown(jobId, mdPath);
 
-      results.push({ file: f, skipped: false, jobId, md: path.basename(mdPath) });
-    }
+        return { file: f, ok: true, jobId, md: path.basename(mdPath) };
+      } catch (err: any) {
+        console.error("[ERROR] procesare fișier:", f, err);
+        return { file: f, ok: false, error: err.message };
+      }
+    });
 
     return NextResponse.json({ ok: true, results });
   } catch (e: any) {
     console.error("[ERROR] /api/upload:", e);
-    return NextResponse.json({ error: e.message || "Eroare upload" }, { status: 500 });
+    return NextResponse.json(
+      { error: e.message || "Eroare upload" },
+      { status: 500 }
+    );
   }
 }
 
@@ -107,4 +146,3 @@ export async function GET() {
     return NextResponse.json({ error: e.message }, { status: 500 });
   }
 }
-
