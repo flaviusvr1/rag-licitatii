@@ -7,8 +7,8 @@ async function main() {
   const index = getIndex().namespace("default");
 
   const filename = "Raport de expertiza tehnica - scanat.md";
-  const fromChunk = 103;
-  const toChunk = 145;
+  const fromChunk = 1;
+  const toChunk = 40;
 
   console.log(`🗑 Șterg fragmente ${fromChunk}–${toChunk} din ${filename} ...`);
 
