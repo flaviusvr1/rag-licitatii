@@ -8,10 +8,15 @@ import {
   uploadFileToLlama,
   waitForCompletion,
   downloadMarkdown,
+  downloadJson,              // <- ADD
 } from "../../../lib/converter/cloud-llama";
 
-const STORAGE_UPLOADS = path.join(process.cwd(), "storage", "uploads");
+const STORAGE_UPLOADS  = path.join(process.cwd(), "storage", "uploads");
 const STORAGE_MARKDOWN = path.join(process.cwd(), "storage", "markdown");
+const STORAGE_JSON     = path.join(process.cwd(), "storage", "json"); // <- ADD
+
+// format global (din .env) — nu se schimbă la runtime
+const PARSE_RESULT_FORMAT = (process.env.PARSE_RESULT_FORMAT || "markdown").toLowerCase() as "markdown" | "json";
 
 const MAX_CONCURRENCY = 6;
 
@@ -67,7 +72,7 @@ async function asyncPool<T, R>(
   items: T[],
   iterator: (item: T) => Promise<R>
 ): Promise<R[]> {
-  const ret: R[] = [];
+  const ret: Promise<R>[] = [];
   const executing = new Set<Promise<any>>();
 
   for (const item of items) {
@@ -88,24 +93,28 @@ async function asyncPool<T, R>(
 
 export async function POST(req: Request) {
   try {
+    // asigură directoare
     await fs.mkdir(STORAGE_UPLOADS, { recursive: true });
     await fs.mkdir(STORAGE_MARKDOWN, { recursive: true });
+    await fs.mkdir(STORAGE_JSON, { recursive: true }); // <- ADD
 
     const files = await saveIncomingFiles(req);
     console.log("[UPLOAD] scrise pe disc:", files);
 
     const results = await asyncPool(MAX_CONCURRENCY, files, async (f) => {
       const uploadPath = path.join(STORAGE_UPLOADS, f);
-      const mdPath = path.join(
-        STORAGE_MARKDOWN,
-        f.replace(/\.[^.]+$/, ".md")
-      );
+
+      // decide output dir/ext in funcție de env
+      const isJson = PARSE_RESULT_FORMAT === "json";
+      const outDir = isJson ? STORAGE_JSON : STORAGE_MARKDOWN;
+      const outExt = isJson ? ".json" : ".md";
+      const outPath = path.join(outDir, f.replace(/\.[^.]+$/, outExt));
 
       try {
         // skip dacă există deja
-        await fs.access(mdPath);
-        console.log("[SKIP] există deja MD:", mdPath);
-        return { file: f, skipped: true };
+        await fs.access(outPath);
+        console.log("[SKIP] există deja:", outPath);
+        return { file: f, skipped: true, path: path.basename(outPath), format: PARSE_RESULT_FORMAT };
       } catch {}
 
       try {
@@ -114,20 +123,24 @@ export async function POST(req: Request) {
         console.log("[LLAMA] job id =", jobId);
 
         console.log("[LLAMA] aștept finalizare…");
-        const status = await waitForCompletion(jobId);
-        console.log("[LLAMA] status final =", status);
+        await waitForCompletion(jobId); // nu presupunem că returnează status
 
-        console.log("[LLAMA] descarc MD →", mdPath);
-        await downloadMarkdown(jobId, mdPath);
+        if (isJson) {
+          console.log("[LLAMA] descarc JSON →", outPath);
+          await downloadJson(jobId, outPath);
+        } else {
+          console.log("[LLAMA] descarc MD →", outPath);
+          await downloadMarkdown(jobId, outPath);
+        }
 
-        return { file: f, ok: true, jobId, md: path.basename(mdPath) };
+        return { file: f, ok: true, jobId, path: path.basename(outPath), format: PARSE_RESULT_FORMAT };
       } catch (err: any) {
         console.error("[ERROR] procesare fișier:", f, err);
         return { file: f, ok: false, error: err.message };
       }
     });
 
-    return NextResponse.json({ ok: true, results });
+    return NextResponse.json({ ok: true, format: PARSE_RESULT_FORMAT, results });
   } catch (e: any) {
     console.error("[ERROR] /api/upload:", e);
     return NextResponse.json(

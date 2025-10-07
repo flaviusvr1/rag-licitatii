@@ -8,7 +8,7 @@ async function main() {
 
   const filename = "Raport de expertiza tehnica - scanat.md";
   const fromChunk = 1;
-  const toChunk = 40;
+  const toChunk = 50;
 
   console.log(`🗑 Șterg fragmente ${fromChunk}–${toChunk} din ${filename} ...`);
 

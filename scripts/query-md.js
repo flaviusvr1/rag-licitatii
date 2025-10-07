@@ -8,7 +8,7 @@ import { normalizeText } from "../lib/normalize.js";
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 async function main() {
-  const question = "Ce concluzii principale formulează expertul la finalul raportului?";
+  const question = "Care este scopul adăugării scării și liftului exterior?";
 
   const normalizedQ = normalizeText(question);
   console.log("❓ Întrebare:", question);
@@ -20,10 +20,12 @@ async function main() {
   });
 
   // 2. Query în Pinecone
-  const results = await queryVectors("default", qEmb.data[0].embedding, 10);
+  const topK = 10;
+  const results = await queryVectors("default", qEmb.data[0].embedding, topK);
 
-  console.log("🔍 Rezultate top 3:");
+  console.log(`🔍 Rezultate top ${topK}:`);
   results.forEach((r, i) => {
+    // console.log(r);
     console.log(`\n--- Rezultat ${i + 1} (scor: ${r.score}) ---`);
     console.log(r.metadata?.text);
   });
