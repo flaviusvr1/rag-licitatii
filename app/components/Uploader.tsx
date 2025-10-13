@@ -1,46 +1,73 @@
+// app/components/Uploader.tsx
 "use client";
-import { useEffect, useState } from "react";
+import React, { useState } from "react";
 
 export default function Uploader() {
-  const [status, setStatus] = useState("");
-  const [files, setFiles] = useState<string[]>([]);
+  const [files, setFiles] = useState<FileList | null>(null);
+  const [target, setTarget] = useState<"md" | "json">("md");
+  const [projectId, setProjectId] = useState<string>("default"); // implicit
 
-  async function refresh() {
-    const r = await fetch("/api/upload");
-    const d = await r.json();
-    setFiles(d.files || []);
-  }
-
-  useEffect(() => { refresh(); }, []);
-
-  async function onUpload(e: React.FormEvent<HTMLFormElement>) {
+  async function handleUpload(e: React.FormEvent) {
     e.preventDefault();
-    setStatus("⏳ Se încarcă...");
-    const fd = new FormData(e.currentTarget);
-    const r = await fetch("/api/upload", { method: "POST", body: fd });
-    const d = await r.json();
-    if (!r.ok) {
-      setStatus("❌ " + (d.error || "Eroare"));
-      return;
-    }
-    setStatus("✅ Încărcat cu succes");
-    refresh();
+    if (!files?.length) return;
+
+    const form = new FormData();
+    Array.from(files).forEach(f => form.append("files", f));
+    form.append("target", target);
+    form.append("projectId", projectId);
+
+    // 1) conversie in Cloud LlamaIndex Parsing -> MD sau JSON
+    const convRes = await fetch("/api/convert", { method: "POST", body: form });
+    if (!convRes.ok) { alert("Conversie eșuată"); return; }
+    const converted = await convRes.json(); // { docs: Array<{id,name,content,meta}>, target }
+
+    // 2) ingest în vector DB (split + embed + upsert)
+    const ingestRes = await fetch("/api/ingest", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        projectId,
+        target: converted.target, // "md" | "json"
+        docs: converted.docs,     // conținut normalizat
+      }),
+    });
+    if (!ingestRes.ok) { alert("Ingest eșuat"); return; }
+    alert("Gata – documentele sunt indexate.");
   }
 
   return (
-    <div className="space-y-4">
-      <form onSubmit={onUpload} className="space-y-2">
-        <input type="file" name="file" multiple required />
-        <button type="submit" className="border px-3 py-1">Încarcă</button>
-        <div className="text-sm opacity-80">{status}</div>
-      </form>
-
-      <div>
-        <h2 className="font-medium mb-2">Fișiere încărcate:</h2>
-        <ul className="list-disc pl-5 text-sm">
-          {files.map((f) => <li key={f}>{f}</li>)}
-        </ul>
+    <form onSubmit={handleUpload} className="space-y-3 p-4 border rounded-xl">
+      <div className="flex gap-3 items-center">
+        <input
+          type="file"
+          name="files"
+          multiple
+          onChange={(e) => setFiles(e.currentTarget.files)}
+          className="block"
+          accept=".pdf,.docx,.md,.json"
+        />
+        <select
+          value={target}
+          onChange={e => setTarget(e.target.value as "md"|"json")}
+          className="border rounded-md p-2"
+          title="Format de ieșire din parser"
+        >
+          <option value="md">Markdown</option>
+          <option value="json">JSON</option>
+        </select>
+        <input
+          placeholder="projectId"
+          value={projectId}
+          onChange={(e)=>setProjectId(e.target.value)}
+          className="border rounded-md p-2"
+        />
+        <button type="submit" className="px-3 py-2 rounded-lg bg-black text-white">
+          Procesează & Ingest
+        </button>
       </div>
-    </div>
+      <p className="text-xs text-gray-500">
+        Limită ~250MB/fișier (implicit). Tipuri: PDF/DOCX/MD/JSON.
+      </p>
+    </form>
   );
 }

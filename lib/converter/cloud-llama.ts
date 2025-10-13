@@ -3,6 +3,9 @@ import fetch from "node-fetch";
 import { promises as fsp } from "fs"; // pentru readFile, writeFile async
 import path from "path";
 import FormData from "form-data";
+import os from "os";
+import crypto from "crypto";
+
 
 
 type ParseResultFormat = "markdown" | "json";
@@ -119,6 +122,72 @@ export async function downloadJson(jobId: string, outPath?: string): Promise<any
     await fsp.writeFile(outPath, JSON.stringify(data, null, 2), "utf-8");
   }
   return data;
+}
+
+
+/** Scrie File-ul primit din API Next într-un fișier temporar */
+async function saveToTmp(file: File): Promise<string> {
+  const buf = Buffer.from(await file.arrayBuffer());
+  const tmp = path.join(os.tmpdir(), `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9_.-]/g, "_")}`);
+  await fsp.writeFile(tmp, buf);
+  return tmp;
+}
+
+/** Citește direct markdown-ul în memorie, fără să-l salveze */
+async function fetchMarkdown(jobId: string): Promise<string> {
+  const res = await fetch(`${API_URL}/job/${jobId}/result/raw/markdown`, {
+    headers: { Authorization: `Bearer ${API_KEY}` },
+  });
+  if (!res.ok) throw new Error(`Fetch markdown failed: ${res.status} ${await res.text()}`);
+  return await res.text();
+}
+
+/** Interfața principală folosită de /api/convert */
+export async function uploadAndConvert(input: {
+  files: File[];
+  target: "markdown" | "json";
+  projectId: string;
+}): Promise<{ docs: Array<{ id: string; name: string; content: string | object; meta: any }> }> {
+  const docs: Array<{ id: string; name: string; content: string | object; meta: any }> = [];
+
+  for (const f of input.files) {
+    // 1) urcare
+    const tmpPath = await saveToTmp(f);
+    const jobId = await uploadFile(tmpPath);
+    await waitForCompletion(jobId);
+
+    // 2) descarcă + (nou) persistă în storage
+    const baseName = f.name || "doc";
+
+    if (input.target === "json") {
+      // scrie în storage/json/<nume>.json
+      const outPath = outPathFor(baseName, "json"); // e deja în fișierul tău
+      await fsp.mkdir(path.dirname(outPath), { recursive: true });
+      const jsonData = await downloadJson(jobId, outPath); // <- SALVEAZĂ + returnează obiectul
+
+      docs.push({
+        id: crypto.randomUUID(),
+        name: baseName,
+        content: jsonData,
+        meta: { projectId: input.projectId, format: "json", source: "cloud-llamaindex", path: outPath },
+      });
+    } else {
+      // opțional: vrei și MD salvat local?
+      const outPath = outPathFor(baseName, "markdown"); // storage/markdown/<nume>.md
+      await fsp.mkdir(path.dirname(outPath), { recursive: true });
+      await downloadMarkdown(jobId, outPath);           // <- SALVEAZĂ pe disc
+      const md = await fsp.readFile(outPath, "utf8");   // și îl încărcăm în memorie pt ingest
+
+      docs.push({
+        id: crypto.randomUUID(),
+        name: baseName,
+        content: md,
+        meta: { projectId: input.projectId, format: "markdown", source: "cloud-llamaindex", path: outPath },
+      });
+    }
+  }
+
+  return { docs };
 }
 
 export { uploadFile as uploadFileToLlama };

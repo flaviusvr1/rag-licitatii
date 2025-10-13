@@ -1,0 +1,189 @@
+{
+  "pages": [
+    {
+      "page": 1,
+      "text": "                                                                                          FAR FOUNDATION SRL\nFAR                                            Bistrița 420155, str. Libertății nr. 38, jud. Bistrița Năsăud\n  FOUNDATION                                                                                 +40 263 708 010\n\n                                                                            Nr. înreg.: 38\n\nLocație:         UPU Miercurea Ciuc\n\n                 PROCES VERBAL DE PREDARE / PRIMIRE\n                           Echipamente IT\n\n  Încheiat azi,  8 sept. 2025     , între:\n\nFar Foundation SRL,\ncu sediul în Bistrița,str. Grănicerilor, nr. 721, înregistrată la Registrul Comerțului sub nr.\nJ06/243/2010, CUI RO2699270 reprezentată de Farcaș Valentin Alexandru\n\nși\n\nDaniel Giurca,\n având           BI/CI seria XM,  nr 68894,\n adresa          jud. Maramures, Targu Lapus, sat. Inau nr. 23\ntelefon          771394931,       angajat al societății în funcția de  Inginer Instalatii\n\nObiectul procesului verbal îl reprezintă predarea bunurilor tehnologice necesare\ndesfășurării activității desemnate conform CIM:\n\nPrin prezentul proces verbal se atestă predarea următoarelor echipamente IT:\n\n          1. Laptop, model Dell Vostro 15 3530, cu seria BBMYQ74\n          2. Telefon, model , cu seria\n          3.\n\nAm predat: Vranău Flavius                  Semnătură\n\n\nAm primit: Daniel Giurca    Semnătură",
+      "md": "\n# PROCES VERBAL DE PREDARE / PRIMIRE  \n## Echipamente IT\n\n**Locație:**  `UPU Miercurea Ciuc`\n\nÎncheiat azi, `8 sept. 2025`, între:\n\n**Far Foundation SRL,**  \ncu sediul în Bistrița, str. Grănicerilor, nr. 721, înregistrată la Registrul Comerțului sub nr. J06/243/2010, CUI **RO2699270** reprezentată de **Farcaș Valentin Alexandru**\n\nși\n\n**Daniel Giurca,**  \n- având BI/CI seria XM, nr 68894,  \n- adresa jud. Maramures, Targu Lapus, sat. Inau nr. 23  \n- telefon **771394931**, angajat al societății în funcția de **Inginer Instalatii**\n\nObiectul procesului verbal îl reprezintă predarea bunurilor tehnologice necesare desfășurării activității desemnate conform CIM:\n\nPrin prezentul proces verbal se atestă predarea următoarelor echipamente IT:\n\n1. Laptop, model Dell Vostro 15 3530, cu seria BBMYQ74  \n2. Telefon, model , cu seria  \n3. \n\nAm predat: Vranău Flavius",
+      "images": [
+        {
+          "name": "img_p0_1.png",
+          "height": 55.499996185302734,
+          "width": 90.75,
+          "x": 45.125,
+          "y": 42.52000045776367,
+          "original_width": 350,
+          "original_height": 215,
+          "ocr": [
+            {
+              "x": 48,
+              "y": 143,
+              "w": 290,
+              "h": 25,
+              "confidence": 0.9995686411857605,
+              "text": "FOUNDATION"
+            },
+            {
+              "x": 39,
+              "y": 50,
+              "w": 175,
+              "h": 96,
+              "confidence": 0.9951074123382568,
+              "text": "FAR"
+            }
+          ]
+        },
+        {
+          "name": "page_1.jpg",
+          "height": 3200,
+          "width": 2261,
+          "x": 0,
+          "y": 0,
+          "original_width": 2261,
+          "original_height": 3200,
+          "type": "full_page_screenshot"
+        }
+      ],
+      "charts": [],
+      "items": [
+        {
+          "type": "heading",
+          "lvl": 1,
+          "value": "PROCES VERBAL DE PREDARE / PRIMIRE",
+          "md": "# PROCES VERBAL DE PREDARE / PRIMIRE  ",
+          "bBox": {
+            "x": 147.88,
+            "y": 186.8,
+            "w": 298.47,
+            "h": 14.63
+          }
+        },
+        {
+          "type": "heading",
+          "lvl": 2,
+          "value": "Echipamente IT",
+          "md": "## Echipamente IT",
+          "bBox": {
+            "x": 252.88,
+            "y": 207.48,
+            "w": 88.7,
+            "h": 12.68
+          }
+        },
+        {
+          "type": "text",
+          "value": "**Locație:**  `UPU Miercurea Ciuc`",
+          "md": "**Locație:**  `UPU Miercurea Ciuc`",
+          "bBox": {
+            "x": 47.38,
+            "y": 137.73,
+            "w": 203.56,
+            "h": 12.68
+          }
+        },
+        {
+          "type": "text",
+          "value": "Încheiat azi, `8 sept. 2025`, între:",
+          "md": "Încheiat azi, `8 sept. 2025`, între:",
+          "bBox": {
+            "x": 57.02,
+            "y": 256.98,
+            "w": 202.47,
+            "h": 12.68
+          }
+        },
+        {
+          "type": "text",
+          "value": "**Far Foundation SRL,**  \ncu sediul în Bistrița, str. Grănicerilor, nr. 721, înregistrată la Registrul Comerțului sub nr. J06/243/2010, CUI **RO2699270** reprezentată de **Farcaș Valentin Alexandru**",
+          "md": "**Far Foundation SRL,**  \ncu sediul în Bistrița, str. Grănicerilor, nr. 721, înregistrată la Registrul Comerțului sub nr. J06/243/2010, CUI **RO2699270** reprezentată de **Farcaș Valentin Alexandru**",
+          "bBox": {
+            "x": 47.38,
+            "y": 45.39,
+            "w": 500.27,
+            "h": 276.01
+          }
+        },
+        {
+          "type": "text",
+          "value": "și",
+          "md": "și",
+          "bBox": {
+            "x": 47.38,
+            "y": 357.48,
+            "w": 9.15,
+            "h": 12.68
+          }
+        },
+        {
+          "type": "text",
+          "value": "**Daniel Giurca,**  \n- având BI/CI seria XM, nr 68894,  \n- adresa jud. Maramures, Targu Lapus, sat. Inau nr. 23  \n- telefon **771394931**, angajat al societății în funcția de **Inginer Instalatii**",
+          "md": "**Daniel Giurca,**  \n- având BI/CI seria XM, nr 68894,  \n- adresa jud. Maramures, Targu Lapus, sat. Inau nr. 23  \n- telefon **771394931**, angajat al societății în funcția de **Inginer Instalatii**",
+          "bBox": {
+            "x": 47.38,
+            "y": 391.23,
+            "w": 467.57,
+            "h": 66.68
+          }
+        },
+        {
+          "type": "text",
+          "value": "Obiectul procesului verbal îl reprezintă predarea bunurilor tehnologice necesare desfășurării activității desemnate conform CIM:",
+          "md": "Obiectul procesului verbal îl reprezintă predarea bunurilor tehnologice necesare desfășurării activității desemnate conform CIM:",
+          "bBox": {
+            "x": 47.38,
+            "y": 478.98,
+            "w": 446.46,
+            "h": 30.68
+          }
+        },
+        {
+          "type": "text",
+          "value": "Prin prezentul proces verbal se atestă predarea următoarelor echipamente IT:",
+          "md": "Prin prezentul proces verbal se atestă predarea următoarelor echipamente IT:",
+          "bBox": {
+            "x": 47.38,
+            "y": 207.48,
+            "w": 435.15,
+            "h": 335.93
+          }
+        },
+        {
+          "type": "text",
+          "value": "1. Laptop, model Dell Vostro 15 3530, cu seria BBMYQ74  \n2. Telefon, model , cu seria  \n3.",
+          "md": "1. Laptop, model Dell Vostro 15 3530, cu seria BBMYQ74  \n2. Telefon, model , cu seria  \n3.",
+          "bBox": {
+            "x": 66.88,
+            "y": 445.23,
+            "w": 372.07,
+            "h": 167.92
+          }
+        },
+        {
+          "type": "text",
+          "value": "Am predat: Vranău Flavius",
+          "md": "Am predat: Vranău Flavius",
+          "bBox": {
+            "x": 47.38,
+            "y": 649.98,
+            "w": 149.48,
+            "h": 12.67
+          }
+        }
+      ],
+      "status": "OK",
+      "originalOrientationAngle": 0,
+      "links": [],
+      "width": 595,
+      "height": 842,
+      "triggeredAutoMode": false,
+      "parsingMode": "premium",
+      "structuredData": null,
+      "noStructuredContent": false,
+      "noTextContent": false,
+      "pageHeaderMarkdown": "",
+      "pageFooterMarkdown": "",
+      "slideSpeakerNotes": null,
+      "slideSectionName": null,
+      "confidence": 1
+    }
+  ]
+}
